@@ -12,14 +12,19 @@ DARK = RGBColor(0x22, 0x22, 0x22)
 GREY = RGBColor(0x66, 0x66, 0x66)
 HEADER_BG = "1F4E9C"
 ALT_BG = "EEF2FA"
+RED_BG = "FBEAEA"
 
-doc = Document()
+# Lignes mises en évidence en rouge dans le tableau (par numéro de semaine)
+RED_WEEKS = {"S1", "S2", "S8"}
 
-# Base style
-style = doc.styles['Normal']
-style.font.name = 'Calibri'
-style.font.size = Pt(10.5)
-style.font.color.rgb = DARK
+
+def new_doc():
+    doc = Document()
+    style = doc.styles['Normal']
+    style.font.name = 'Calibri'
+    style.font.size = Pt(10.5)
+    style.font.color.rgb = DARK
+    return doc
 
 
 def shade_cell(cell, color_hex):
@@ -44,7 +49,7 @@ def set_cell_text(cell, text, bold=False, color=None, size=10, align=None):
     return cell
 
 
-def add_heading(text, size=16, color=BLUE, space_before=14, space_after=6):
+def add_heading(doc, text, size=16, color=BLUE, space_before=14, space_after=6):
     p = doc.add_paragraph()
     p.paragraph_format.space_before = Pt(space_before)
     p.paragraph_format.space_after = Pt(space_after)
@@ -55,42 +60,33 @@ def add_heading(text, size=16, color=BLUE, space_before=14, space_after=6):
     return p
 
 
-def add_sub(text, size=12.5, color=BLUE):
-    return add_heading(text, size=size, color=color, space_before=12, space_after=4)
+def add_sub(doc, text, size=12.5, color=BLUE):
+    return add_heading(doc, text, size=size, color=color, space_before=12, space_after=4)
 
 
-# ---------- TITRE ----------
-title = doc.add_paragraph()
-title.alignment = WD_ALIGN_PARAGRAPH.LEFT
-r = title.add_run('Bolide Pro')
-r.bold = True
-r.font.size = Pt(30)
-r.font.color.rgb = BLUE
+def add_title_block(doc, subtitle):
+    title = doc.add_paragraph()
+    title.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    r = title.add_run('Bolide Pro')
+    r.bold = True
+    r.font.size = Pt(30)
+    r.font.color.rgb = BLUE
 
-sub = doc.add_paragraph()
-r = sub.add_run('Planning de développement — 8 semaines')
-r.font.size = Pt(15)
-r.font.color.rgb = GREY
+    sub = doc.add_paragraph()
+    r = sub.add_run(subtitle)
+    r.font.size = Pt(15)
+    r.font.color.rgb = GREY
 
-meta = doc.add_paragraph()
-r = meta.add_run('Démarrage : lundi 15 juin 2026 — Gabon / Afrique centrale (XAF)')
-r.italic = True
-r.font.size = Pt(10)
-r.font.color.rgb = GREY
+    meta = doc.add_paragraph()
+    r = meta.add_run('Démarrage : lundi 15 juin 2026 — Gabon / Afrique centrale (XAF)')
+    r.italic = True
+    r.font.size = Pt(10)
+    r.font.color.rgb = GREY
+    doc.add_paragraph()
 
-doc.add_paragraph()
 
-intro = doc.add_paragraph()
-intro.add_run(
-    "Ce planning couvre la finalisation du socle Fleet OS V1.5 (semaines 1 à 2) puis le "
-    "développement complet de la couche Bolide Pro (semaines 3 à 7). La huitième et dernière "
-    "semaine est entièrement consacrée aux tests et corrections avant mise en production."
-)
-
-# ---------- TABLEAU PLANNING ----------
-add_heading('1. Vue d\'ensemble du planning', size=16)
-
-rows = [
+# ---------- DONNÉES ----------
+ROWS = [
     ("Semaine", "Dates", "Phase", "Livrable"),
     ("S1", "15 – 19 juin 2026", "Fleet OS V1.5",
      "Gestion des véhicules opérationnelle : chaque flotte peut enregistrer ses véhicules, "
@@ -131,51 +127,7 @@ rows = [
      "fiabilisation."),
 ]
 
-table = doc.add_table(rows=0, cols=4)
-table.style = 'Table Grid'
-table.alignment = WD_TABLE_ALIGNMENT.CENTER
-
-widths = [Inches(0.6), Inches(1.5), Inches(1.1), Inches(3.8)]
-for i, (c0, c1, c2, c3) in enumerate(rows):
-    row = table.add_row()
-    cells = row.cells
-    for j, txt in enumerate((c0, c1, c2, c3)):
-        cells[j].width = widths[j]
-        if i == 0:
-            set_cell_text(cells[j], txt, bold=True, color=RGBColor(0xFF, 0xFF, 0xFF), size=10.5)
-            shade_cell(cells[j], HEADER_BG)
-        else:
-            is_test = (c2 == "Tests & corrections")
-            set_cell_text(cells[j], txt, bold=(j <= 2),
-                          color=BLUE if j <= 2 else DARK, size=10)
-            if i % 2 == 0:
-                shade_cell(cells[j], ALT_BG)
-            if is_test:
-                shade_cell(cells[j], "FBEAEA")
-
-doc.add_paragraph()
-
-note = doc.add_paragraph()
-r = note.add_run("Dépendances : ")
-r.bold = True
-r.font.color.rgb = BLUE
-note.add_run(
-    "Fleet OS V1.5 (S1–S2) fournit le socle (véhicules, incidents) réutilisé par Bolide Pro. "
-    "Au sein de Bolide Pro, chaque semaine s'appuie sur la précédente : les affectations (S3) "
-    "conditionnent la validation (S4), qui conditionne le salaire (S5), lui-même agrégé dans "
-    "les tableaux de bord (S6). Mise en production prévue : lundi 10 août 2026."
-).font.size = Pt(10)
-
-# ---------- PARTIE TECHNIQUE ----------
-doc.add_page_break()
-add_heading('2. Détail technique par livrable (Modules & tâches)', size=16)
-tech_intro = doc.add_paragraph()
-tech_intro.add_run(
-    "Cette section détaille, pour chaque semaine, les modules et tâches techniques à réaliser. "
-    "Elle s'adresse au développeur. Références entre crochets = sections du cahier des charges v2.0."
-).italic = True
-
-tech = [
+TECH = [
     ("S1 — 15 au 19 juin 2026 — Fleet OS V1.5 : Véhicules & Affectations [4.7]", [
         "Entité `vehicules` : CRUD, champs (flotte_id, type, immatriculation, statut).",
         "Statuts véhicule : actif | immobilisé (hors_service = V2). Passage en immobilisé → "
@@ -259,22 +211,99 @@ tech = [
     ]),
 ]
 
-for header, items in tech:
-    add_sub(header, size=12)
-    for it in items:
-        p = doc.add_paragraph(style='List Bullet')
-        p.paragraph_format.space_after = Pt(2)
-        run = p.add_run(it)
-        run.font.size = Pt(10)
 
-doc.add_paragraph()
-foot = doc.add_paragraph()
-r = foot.add_run('Bolide — Planning de développement Bolide Pro (8 semaines) — usage interne')
-r.italic = True
-r.font.size = Pt(9)
-r.font.color.rgb = GREY
-foot.alignment = WD_ALIGN_PARAGRAPH.CENTER
+# ---------- BLOCS RÉUTILISABLES ----------
+def build_planning_table(doc, heading_text):
+    add_heading(doc, heading_text, size=16)
+    intro = doc.add_paragraph()
+    intro.add_run(
+        "Ce planning couvre la finalisation du socle Fleet OS V1.5 (semaines 1 à 2) puis le "
+        "développement complet de la couche Bolide Pro (semaines 3 à 7). La huitième et dernière "
+        "semaine est entièrement consacrée aux tests et corrections avant mise en production."
+    )
 
-out = '/home/user/BolidePro/Bolide_Pro_Planning_8_semaines.docx'
-doc.save(out)
-print('Saved:', out)
+    table = doc.add_table(rows=0, cols=4)
+    table.style = 'Table Grid'
+    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    widths = [Inches(0.6), Inches(1.5), Inches(1.1), Inches(3.8)]
+
+    for i, (c0, c1, c2, c3) in enumerate(ROWS):
+        row = table.add_row()
+        cells = row.cells
+        for j, txt in enumerate((c0, c1, c2, c3)):
+            cells[j].width = widths[j]
+            if i == 0:
+                set_cell_text(cells[j], txt, bold=True, color=RGBColor(0xFF, 0xFF, 0xFF), size=10.5)
+                shade_cell(cells[j], HEADER_BG)
+            else:
+                set_cell_text(cells[j], txt, bold=(j <= 2),
+                              color=BLUE if j <= 2 else DARK, size=10)
+                if c0 in RED_WEEKS:
+                    shade_cell(cells[j], RED_BG)
+                elif i % 2 == 0:
+                    shade_cell(cells[j], ALT_BG)
+
+    doc.add_paragraph()
+    note = doc.add_paragraph()
+    r = note.add_run("Dépendances : ")
+    r.bold = True
+    r.font.color.rgb = BLUE
+    note.add_run(
+        "Fleet OS V1.5 (S1–S2) fournit le socle (véhicules, incidents) réutilisé par Bolide Pro. "
+        "Au sein de Bolide Pro, chaque semaine s'appuie sur la précédente : les affectations (S3) "
+        "conditionnent la validation (S4), qui conditionne le salaire (S5), lui-même agrégé dans "
+        "les tableaux de bord (S6). Mise en production prévue : lundi 10 août 2026."
+    ).font.size = Pt(10)
+
+
+def build_tech_section(doc, heading_text):
+    add_heading(doc, heading_text, size=16)
+    tech_intro = doc.add_paragraph()
+    tech_intro.add_run(
+        "Cette section détaille, pour chaque semaine, les modules et tâches techniques à réaliser. "
+        "Elle s'adresse au développeur. Références entre crochets = sections du cahier des charges v2.0."
+    ).italic = True
+
+    for header, items in TECH:
+        add_sub(doc, header, size=12)
+        for it in items:
+            p = doc.add_paragraph(style='List Bullet')
+            p.paragraph_format.space_after = Pt(2)
+            run = p.add_run(it)
+            run.font.size = Pt(10)
+
+
+def add_footer(doc, label):
+    doc.add_paragraph()
+    foot = doc.add_paragraph()
+    r = foot.add_run(label)
+    r.italic = True
+    r.font.size = Pt(9)
+    r.font.color.rgb = GREY
+    foot.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+
+# ---------- FICHIER COMBINÉ ----------
+doc = new_doc()
+add_title_block(doc, 'Planning de développement — 8 semaines')
+build_planning_table(doc, "1. Vue d'ensemble du planning")
+doc.add_page_break()
+build_tech_section(doc, "2. Détail technique par livrable (Modules & tâches)")
+add_footer(doc, 'Bolide — Planning de développement Bolide Pro (8 semaines) — usage interne')
+doc.save('/home/user/BolidePro/Bolide_Pro_Planning_8_semaines.docx')
+
+# ---------- FICHIER 1 : PLANNING (point 1) ----------
+doc1 = new_doc()
+add_title_block(doc1, 'Planning de développement — Vue d\'ensemble')
+build_planning_table(doc1, "Vue d'ensemble du planning")
+add_footer(doc1, 'Bolide — Planning de développement Bolide Pro (8 semaines) — usage interne')
+doc1.save('/home/user/BolidePro/Bolide_Pro_Planning_Vue_ensemble.docx')
+
+# ---------- FICHIER 2 : DÉTAIL TECHNIQUE (point 2) ----------
+doc2 = new_doc()
+add_title_block(doc2, 'Détail technique par livrable — Modules & tâches')
+build_tech_section(doc2, "Détail technique par livrable (Modules & tâches)")
+add_footer(doc2, 'Bolide — Détail technique Bolide Pro (8 semaines) — usage interne')
+doc2.save('/home/user/BolidePro/Bolide_Pro_Detail_technique.docx')
+
+print('Saved 3 files.')
