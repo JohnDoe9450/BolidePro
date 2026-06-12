@@ -73,7 +73,7 @@ r.font.size = Pt(15)
 r.font.color.rgb = GREY
 
 meta = doc.add_paragraph()
-r = meta.add_run('Cadre : 1 développeur — ordre séquentiel — Gabon / Afrique centrale (XAF)')
+r = meta.add_run('Démarrage : lundi 15 juin 2026 — Gabon / Afrique centrale (XAF)')
 r.italic = True
 r.font.size = Pt(10)
 r.font.color.rgb = GREY
@@ -84,73 +84,70 @@ intro = doc.add_paragraph()
 intro.add_run(
     "Ce planning couvre la finalisation du socle Fleet OS V1.5 (semaines 1 à 2) puis le "
     "développement complet de la couche Bolide Pro (semaines 3 à 7). La huitième et dernière "
-    "semaine est entièrement consacrée aux tests et corrections avant mise en production. "
-    "Le développement est réalisé par un seul développeur, en séquentiel."
+    "semaine est entièrement consacrée aux tests et corrections avant mise en production."
 )
 
 # ---------- TABLEAU PLANNING ----------
 add_heading('1. Vue d\'ensemble du planning', size=16)
 
 rows = [
-    ("Semaine", "Phase", "Livrable"),
-    ("S1", "Fleet OS V1.5",
+    ("Semaine", "Dates", "Phase", "Livrable"),
+    ("S1", "15 – 19 juin 2026", "Fleet OS V1.5",
      "Gestion des véhicules opérationnelle : chaque flotte peut enregistrer ses véhicules, "
      "suivre leur état (actif / immobilisé) et associer un chauffeur à un véhicule. "
      "Un chauffeur ne peut conduire qu'un véhicule à la fois, et un véhicule n'a qu'un seul "
      "chauffeur actif."),
-    ("S2", "Fleet OS V1.5",
+    ("S2", "22 – 26 juin 2026", "Fleet OS V1.5",
      "Suivi des incidents et des dépenses : déclaration et résolution d'un incident de bout en "
      "bout (de la déclaration à la clôture), enregistrement des dépenses (carburant, réparations), "
      "détection automatique des retards et blocages de chauffeurs chaque soir, et export des "
      "données en Excel/CSV."),
-    ("S3", "Bolide Pro",
+    ("S3", "29 juin – 3 juil. 2026", "Bolide Pro",
      "Affectations dédiées : un manager d'entreprise se voit attribuer des chauffeurs en "
      "exclusivité, avec leur taux journalier et leurs horaires contractuels. Le système garantit "
      "qu'un chauffeur n'a qu'une seule affectation active et conserve l'historique de toutes les "
      "modifications."),
-    ("S4", "Bolide Pro",
+    ("S4", "6 – 10 juil. 2026", "Bolide Pro",
      "Validation journalière des activités : le chauffeur déclare sa fin de journée, le manager "
      "valide ou refuse. Seules les journées validées seront comptabilisées. Chaque partie est "
      "notifiée en temps réel (validation, refus, commentaire)."),
-    ("S5", "Bolide Pro",
+    ("S5", "13 – 17 juil. 2026", "Bolide Pro",
      "Gestion des heures supplémentaires et calcul du salaire : les heures sup sont détectées "
      "automatiquement dès qu'un chauffeur dépasse son horaire, puis approuvées (totalement ou "
      "partiellement) par le manager. Le salaire mensuel est calculé et mis à jour en temps réel "
      "à chaque validation."),
-    ("S6", "Bolide Pro",
+    ("S6", "20 – 24 juil. 2026", "Bolide Pro",
      "Tableau de bord manager : une vue unique et consolidée de tous ses chauffeurs — activité, "
      "validations en attente, heures travaillées, coût mensuel et performance. Conçu pour une "
      "consultation rapide même avec un grand nombre de chauffeurs."),
-    ("S7", "Bolide Pro",
+    ("S7", "27 – 31 juil. 2026", "Bolide Pro",
      "Espace chauffeur et notation : chaque chauffeur dispose de son espace personnel (salaire "
      "estimé, journées, notifications, déclaration de problème). Le manager peut noter ses "
      "chauffeurs (1 à 5), avec un score moyen affiché. Notifications par email et in-app finalisées."),
-    ("S8", "Tests & corrections",
+    ("S8", "3 – 7 août 2026", "Tests & corrections",
      "Recette finale : tests complets de tous les parcours (validation, salaire, sécurité, "
      "cloisonnement des données entre clients), correction des anomalies détectées et "
      "préparation de la mise en production. Aucune nouvelle fonctionnalité — uniquement "
      "fiabilisation."),
 ]
 
-table = doc.add_table(rows=0, cols=3)
+table = doc.add_table(rows=0, cols=4)
 table.style = 'Table Grid'
 table.alignment = WD_TABLE_ALIGNMENT.CENTER
 
-widths = [Inches(0.7), Inches(1.3), Inches(4.5)]
-for i, (c0, c1, c2) in enumerate(rows):
+widths = [Inches(0.6), Inches(1.5), Inches(1.1), Inches(3.8)]
+for i, (c0, c1, c2, c3) in enumerate(rows):
     row = table.add_row()
     cells = row.cells
-    for j, txt in enumerate((c0, c1, c2)):
+    for j, txt in enumerate((c0, c1, c2, c3)):
         cells[j].width = widths[j]
         if i == 0:
             set_cell_text(cells[j], txt, bold=True, color=RGBColor(0xFF, 0xFF, 0xFF), size=10.5)
             shade_cell(cells[j], HEADER_BG)
         else:
-            is_test = (c1 == "Tests & corrections")
-            bold0 = (j == 0)
-            color = BLUE if (j <= 1) else DARK
-            set_cell_text(cells[j], txt, bold=(bold0 or j == 1),
-                          color=color if j <= 1 else DARK, size=10)
+            is_test = (c2 == "Tests & corrections")
+            set_cell_text(cells[j], txt, bold=(j <= 2),
+                          color=BLUE if j <= 2 else DARK, size=10)
             if i % 2 == 0:
                 shade_cell(cells[j], ALT_BG)
             if is_test:
@@ -163,10 +160,10 @@ r = note.add_run("Dépendances : ")
 r.bold = True
 r.font.color.rgb = BLUE
 note.add_run(
-    "le développement est strictement séquentiel. Fleet OS V1.5 (S1–S2) fournit le socle "
-    "(véhicules, incidents) réutilisé par Bolide Pro. Au sein de Bolide Pro, chaque semaine "
-    "s'appuie sur la précédente : les affectations (S3) conditionnent la validation (S4), qui "
-    "conditionne le salaire (S5), lui-même agrégé dans les tableaux de bord (S6)."
+    "Fleet OS V1.5 (S1–S2) fournit le socle (véhicules, incidents) réutilisé par Bolide Pro. "
+    "Au sein de Bolide Pro, chaque semaine s'appuie sur la précédente : les affectations (S3) "
+    "conditionnent la validation (S4), qui conditionne le salaire (S5), lui-même agrégé dans "
+    "les tableaux de bord (S6). Mise en production prévue : lundi 10 août 2026."
 ).font.size = Pt(10)
 
 # ---------- PARTIE TECHNIQUE ----------
@@ -179,7 +176,7 @@ tech_intro.add_run(
 ).italic = True
 
 tech = [
-    ("S1 — Fleet OS V1.5 : Véhicules & Affectations [4.7]", [
+    ("S1 — 15 au 19 juin 2026 — Fleet OS V1.5 : Véhicules & Affectations [4.7]", [
         "Entité `vehicules` : CRUD, champs (flotte_id, type, immatriculation, statut).",
         "Statuts véhicule : actif | immobilisé (hors_service = V2). Passage en immobilisé → "
         "fin automatique de l'affectation + alerte dashboard.",
@@ -187,7 +184,7 @@ tech = [
         "Contrainte : 1 affectation active max par chauffeur ET 1 par véhicule.",
         "Index DB sur fleet_id, driver_id, status.",
     ]),
-    ("S2 — Fleet OS V1.5 : Incidents, Dépenses, Automatismes [4.8 / 9.3]", [
+    ("S2 — 22 au 26 juin 2026 — Fleet OS V1.5 : Incidents, Dépenses, Automatismes [4.8 / 9.3]", [
         "Workflow incident `incidents` : déclaré → en_analyse → en_cours → résolu → clôturé "
         "(non supprimable). Incident critique → immobilisation auto du véhicule.",
         "Entité `depenses` (carburant, réparation) liée à flotte/véhicule/incident, écriture "
@@ -197,7 +194,7 @@ tech = [
         "snapshot wallet. Idempotent.",
         "Exports CSV/Excel (paiements, wallet) [P1].",
     ]),
-    ("S3 — Bolide Pro : Affectations dédiées [5.1]", [
+    ("S3 — 29 juin au 3 juillet 2026 — Bolide Pro : Affectations dédiées [5.1]", [
         "Migrations PostgreSQL : `pro_assignments`, `pro_assignment_history`, tables Pro restantes.",
         "Nouveau rôle `pro_manager` + mise à jour matrice RBAC, middleware autorisation Pro "
         "(rôle + appartenance flotte, 403 cross-flotte).",
@@ -208,7 +205,7 @@ tech = [
         "Pas de suppression (status='suspended'). Toute modif → historique (changed_by, timestamp).",
         "vehicle_id NULLABLE : véhicule dédié optionnel (pas de dépendance dure à V1.5).",
     ]),
-    ("S4 — Bolide Pro : Validation journalière [5.2]", [
+    ("S4 — 6 au 10 juillet 2026 — Bolide Pro : Validation journalière [5.2]", [
         "Entités `daily_logs` + `daily_validations`. UNIQUE(driver_id, date).",
         "PATCH /pro/daily-logs/:id/end-time (driver) → daily_log status='pending' + push manager.",
         "POST /pro/daily-logs/:id/validate et /reject (pro_manager, super_admin) ; "
@@ -218,7 +215,7 @@ tech = [
         "immuable post-validation sauf override tracé ; manager limité à SES chauffeurs.",
         "Notifications VAL (→ manager) et VAL_RES (→ driver).",
     ]),
-    ("S5 — Bolide Pro : Heures supplémentaires & Salaire [5.3 / 5.4]", [
+    ("S5 — 13 au 17 juillet 2026 — Bolide Pro : Heures supplémentaires & Salaire [5.3 / 5.4]", [
         "Entité `overtime_requests`. Déclenchement auto si end_time_declared > expected_end_time : "
         "création requête (requested_minutes = DATEDIFF, status='pending') + notif manager.",
         "POST /pro/overtime/:id/approve (total ou {validated_minutes: X} partiel) ; "
@@ -231,7 +228,7 @@ tech = [
         "(super_admin, montant + motif obligatoire).",
         "Notifications OT (→ manager) et OT_RES (→ driver).",
     ]),
-    ("S6 — Bolide Pro : Dashboard manager Pro [5.5]", [
+    ("S6 — 20 au 24 juillet 2026 — Bolide Pro : Dashboard manager Pro [5.5]", [
         "Endpoint agrégé unique GET /pro/managers/:id/dashboard?month=YYYY-MM (objectif < 800ms "
         "pour 50 chauffeurs).",
         "Sections : Opérationnel (chauffeurs actifs, validations en attente, incidents ouverts), "
@@ -239,7 +236,7 @@ tech = [
         "heures sup en attente), Financier (coût total, coût heures sup).",
         "Cache lecture Redis (TTL court 30s–2min). Index DB adaptés.",
     ]),
-    ("S7 — Bolide Pro : Interface Driver & Notation [5.6 / 5.7]", [
+    ("S7 — 27 au 31 juillet 2026 — Bolide Pro : Interface Driver & Notation [5.6 / 5.7]", [
         "Écrans driver Pro : dashboard personnel (salaire estimé, journées validées/en attente, "
         "heures sup), Mes journées (déclarer fin de journée), Mon salaire (lecture seule), "
         "Notifications, Déclarer un problème (→ crée Incident), Support.",
@@ -250,7 +247,7 @@ tech = [
         "Finalisation notifications Pro (in-app + email) ; règle UX : notification actionnable "
         "(lien direct vers l'entité).",
     ]),
-    ("S8 — Tests & corrections [12]", [
+    ("S8 — 3 au 7 août 2026 — Tests & corrections [12]", [
         "Tests unitaires : calcul retard, calcul salaire, formule overtime, validation statuts.",
         "Tests d'intégration : workflow paiement → wallet → ledger ; workflow daily_log → salary.",
         "Tests de sécurité : cross-fleet access (403 attendu), rôle insuffisant, suppression "
